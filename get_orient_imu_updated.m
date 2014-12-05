@@ -3,7 +3,7 @@ function imu = get_orient_imu(imu, varargin)
 opt.method = 'simple';
 opt.gyrooffset = [-16 -8];
 opt.gyroband = [0.1 10];
-opt.getoffset = false;
+opt.getoffset = true;
 
 opt = parsevarargin(opt,varargin,2);
 
@@ -34,16 +34,16 @@ if opt.getoffset
     [b,a] = butter(5,0.5/(imu.rate/2),'low');
     %% Update 1.01 - obtain angular acceleration by differentiating gyro
     % Note : gyro is a N X 3 vector
-    angacclo            = diff(gyro)./repmat(diff(imu.t),1,3); % (N-1) X 3 vector
+    angacclo            = diff(gyros)./repmat(diff(imu.t),1,3); % (N-1) X 3 vector
     % Approach 1 (may be wrong) - replicating the 1st element to make it N size
     angacclo            = [angacclo(1,:);angacclo];
     % Approach 2 curve fitting (correct)
     % Need to do this	
 
     % Convert the units first - deg to radians
-    imu.gyrocross       = crossProductMatrix(gyro*pi/180);
+    imu.gyrocross       = crossProductMatrix(gyros*pi/180);
     imu.angacclocross   = crossProductMatrix(angacclo*pi/180);
-    imu.correctiondist  = [0.1, 0.1, 0.2];  % Correction distance (1,3) in meters
+    imu.correctiondist  = [6.6, 11.4, -7]*1e-3;  % Correction distance (1,3) in meters
     for ii = 1:size(imu.acc,1)
         imu.newacc(ii,:)  = imu.acc(ii,:) + imu.correctiondist*...
             (imu.angacclocross(:,:,ii) + imu.gyrocross(:,:,ii)^2)';
@@ -112,9 +112,10 @@ end
 % Input = theVector - N X 3
 % Output = theMatrix - 3 X 3 X N
 function [theMatrix] = crossProductMatrix(theVector)
-    theMatrix = zeros(3, 3,N);
-    for ii = 1:size(theVector,1)
-        theMartix(:,:,N) = [0, -theVector(ii,3), theVector(ii,2);
+    N = size(theVector,1);
+    theMatrix = zeros(3, 3, N);
+    for ii = 1:N
+        theMartix(:,:,ii) = [0, -theVector(ii,3), theVector(ii,2);
             theVector(ii,3), 0, -theVector(ii,1);
             -theVector(ii,2), theVector(ii,1), 0];
     end
