@@ -5,7 +5,7 @@ opt.gyrooffset = [-16 -8];
 opt.gyroband = [0.1 10];
 opt.getoffset = true;
 
-opt = parsevarargin(opt,varargin,2);
+opt = parsevarargin(opt,varargin,2); %where is this coming from?
 
 imu.rate = 1/mean(diff(imu.t));
 
@@ -115,7 +115,7 @@ function [theMatrix] = crossProductMatrix(theVector)
     N = size(theVector,1);
     theMatrix = zeros(3, 3, N);
     for ii = 1:N
-        theMartix(:,:,ii) = [0, -theVector(ii,3), theVector(ii,2);
+        theMatrix(:,:,ii) = [0, -theVector(ii,3), theVector(ii,2);
             theVector(ii,3), 0, -theVector(ii,1);
             -theVector(ii,2), theVector(ii,1), 0];
     end
